@@ -522,7 +522,11 @@ function esReservaValida(d) {
     if (d === null || typeof d !== "object" || Array.isArray(d)) return false;
     if (!esTextoNoVacio(d.nombre)) return false;
     if (!esTextoNoVacio(d.apellidos)) return false;
-    if (!esTextoNoVacio(d["categoría"])) return false;
+
+    // El enunciado dice "categoría" (con tilde), pero muchos grupos la envían sin tilde:
+    // aceptamos las dos formas
+    var categoria = d["categoría"] !== undefined ? d["categoría"] : d.categoria;
+    if (!esTextoNoVacio(categoria)) return false;
 
     var horas = Number(d.horas_estimadas);
     if (d.horas_estimadas === null || d.horas_estimadas === "" || isNaN(horas) || horas < 0) return false;
