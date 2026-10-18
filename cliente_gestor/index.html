@@ -1,0 +1,215 @@
+<!-- ALICIA -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Aplicación Gestor</title>
+    <script src="rest.js"></script>
+    <script src="main.js"></script>
+</head>
+
+<body>
+    <!-- LOGIN -->
+    <div id="login">
+        <h2>ACCESO</h2>
+        Usuario: <input type="text" id="login_usuario"><br><br>
+        Contraseña: <input type="password" id="login_password"><br><br>
+
+        <button onclick="Entrar()">Entrar</button>
+        <button onclick="MostrarRegistro()">Registrarse</button>
+    </div>
+
+    <!-- REGISTRO DE GESTOR -->
+    <div id="registro" style="display:none;">
+        <h2>DATOS GESTOR</h2>
+
+        Nombre: <input type="text" id="reg_nombre"><br><br>
+        Apellidos: <input type="text" id="reg_apellidos"><br><br>
+        Login: <input type="text" id="reg_usuario"><br><br>
+        Contraseña: <input type="password" id="reg_password"><br><br>
+
+        <button onclick="Registrar()">Guardar</button>
+        <button onclick="VolverLogin()">Cancelar</button>
+    </div>
+
+    <!-- VISTA PRINCIPAL -->
+    <div id="inicio" style="display:none;">
+        <h2>INICIO</h2>
+
+        Bienvenido <span id="nombre_gestor"></span> <!-- span es una etiqueta en línea: marca una parte pequeña del texto -->
+
+        <button onclick="EditarDatos()">Editar datos</button>
+
+        <!-- P3 - PARTE 1: MINISTERIO DE SANIDAD (envío de reservas y ranking por área) -->
+        <h3>Ministerio de Sanidad</h3>
+
+        <button onclick="EnviarReservasMinisterio()">Enviar reservas al Ministerio</button>
+        <button onclick="cargarRanking()">Actualizar ranking</button>
+        <p id="ministerio_estado"></p>
+
+        <table border="1" id="tabla_ranking">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Área médica</th>
+                    <th>Reservas totales</th>
+                </tr>
+            </thead>
+            <tbody id="ranking_cuerpo"></tbody>
+        </table>
+        <!-- FIN P3 -->
+
+        <!-- FILTROS DE BÚSQUEDA -->
+        <h3>Búsqueda de recursos</h3>
+
+        Categoría:
+        <select id="f_categoria">
+            <option value="">Todas</option>
+            <option value="1">Termómetros</option>
+            <option value="2">Estetoscopios</option>
+            <option value="3">Sillas de ruedas</option>
+        </select>
+        <br><br>
+
+        Modelo:
+        <select id="f_modelo">
+            <option value="">Todos</option>
+            <option value="1">ThermoX</option>
+            <option value="2">ThermoPro</option>
+            <option value="3">EstetoPro</option>
+            <option value="4">EstetoPlus</option>
+            <option value="5">WheelBasic</option>
+        </select>
+        <br><br>
+
+        Ubicación:
+        <select id="f_ubicacion">
+            <option value="">Todos</option>
+            <option value="1">Almacén principal</option>
+            <option value="2">Laboratorio A</option>
+            <option value="3">Sala de Urgencias</option>
+            <option value="4">Quirófano 1</option>
+            <option value="5">Planta 2</option>
+        </select>
+        <br><br>
+
+        Estado:
+        <select id="f_estado">
+            <option value="">Todos</option>
+            <option value="0">Operativo</option>
+            <option value="1">De baja/Defectuoso</option>
+            <option value="2">En mantenimiento</option>
+        </select>
+        <br><br>
+
+        <button onclick="BuscarRecursos()">Buscar</button><br><br>
+
+        <h3>Área</h3>
+
+        Código postal:
+        <input type="text" id="codigo"><br><br>
+
+        Nombre:
+        <input type="text" id="nombre"><br><br>
+
+        <button onclick="CrearArea()">Crear Area</button><br><br>
+
+        <!-- TABLA DE RESULTADOS -->
+        <table border="1" id="tabla_recursos" style="display:none;">
+            <thead>
+                <tr>
+                    <th>N. Serie</th>
+                    <th>Categoría</th>
+                    <th>Modelo</th>
+                    <th>Ubicación</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="lista_recursos"></tbody>
+        </table><br>
+
+        <button onclick="MostrarAltaRecurso()">Añadir Recurso</button>
+        <button onclick="Salir()">Salir</button>
+    </div>
+
+    <!-- Lo que se ve al darle Añadir un recurso o Ficha -->
+    <div id="alta_recurso" style="display:none;">
+
+        <h3>Datos Recurso</h3>
+
+        Categoría:
+        <select id="nueva_categoria">
+            <option value="">Todas</option>
+            <option value="1">Termómetros</option>
+            <option value="2">Estetoscopios</option>
+            <option value="3">Sillas de ruedas</option>
+        </select><br><br>
+
+        Modelo:
+        <select id="nuevo_modelo">
+            <option value="1">ThermoX</option>
+            <option value="2">ThermoPro</option>
+            <option value="3">EstetoPro</option>
+            <option value="4">EstetoPlus</option>
+            <option value="5">WheelBasic</option>
+        </select><br><br>
+
+        Número de serie:
+        <input type="text" id="nuevo_numero"><br><br>
+
+        Ubicación:
+        <select id="nuevo_ubicacion">
+            <option value="1">Almacén principal</option>
+            <option value="2">Laboratorio A</option>
+            <option value="3">Sala de Urgencias</option>
+            <option value="4">Quirófano 1</option>
+            <option value="5">Planta 2</option>
+        </select><br><br>
+
+        Estado:
+        <select id="nuevo_estado">
+            <option value="0">Operativo</option>
+            <option value="1">De baja / defectuoso</option>
+            <option value="2">En mantenimiento</option>
+        </select><br><br>
+
+        <button onclick="GuardarRecurso()">Guardar</button>
+
+        <hr>
+
+        <h3>Reservas</h3>
+        <table border="1" id="tabla_reservas" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Sanitario</th>
+                    <th>Horas estimadas</th>
+                    <th>F. Petición</th>
+                    <th>F. Inicio</th>
+                    <th>F. Fin</th>
+                </tr>
+            </thead>
+            <tbody id="lista_reservas"></tbody>
+        </table>
+
+        <h3>Reseñas</h3>
+        <table border="1" id="tabla_resenyas" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Sanitario</th>
+                    <th>Valoración</th>
+                    <th>Comentario</th>
+                </tr>
+            </thead>
+            <tbody id="lista_resenyas"></tbody>
+        </table>
+
+        <br><br>
+        <button onclick="CancelarAlta()">Volver al listado</button>
+
+    </div>
+
+</body>
+</html>

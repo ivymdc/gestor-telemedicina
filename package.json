@@ -1,0 +1,16 @@
+{
+  "name": "gestor-telemedicina",
+  "version": "1.0.0",
+  "description": "Aplicación del gestor - Telemedicina y Teleasistencia 26/27",
+  "scripts": {
+    "start": "node servidor_render.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "jwt-simple": "^0.5.6",
+    "pg": "^8.13.0"
+  }
+}
