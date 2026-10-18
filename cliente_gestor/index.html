@@ -1,214 +1,651 @@
 <!-- ALICIA -->
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Aplicación Gestor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Recursos Sanitarios</title>
+
+    <style>
+        /* ================= COLORES DE LA APP ================= */
+        :root {
+            --primario: #0e7c7b;        /* verde azulado del gestor (el sanitario es azul) */
+            --primario-osc: #095857;
+            --primario-claro: #e3f4f3;
+            --acento: #0e9384;          /* verde azulado */
+            --rojo: #c62828;
+            --rojo-claro: #fdecea;
+            --verde: #2e7d32;
+            --verde-claro: #e8f5e9;
+            --ambar: #b26a00;
+            --ambar-claro: #fff4e0;
+            --azul-claro: #e3f0ff;
+            --gris: #5f6b7a;
+            --borde: #dfe5ec;
+            --fondo: #f3f6fa;
+            --texto: #1f2a37;
+            --radio: 12px;
+            --sombra: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--fondo);
+            color: var(--texto);
+            font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.45;
+        }
+
+        h2, h3 { margin: 0; }
+
+        /* ================= LOGIN Y REGISTRO ================= */
+        #login, #registro {
+            max-width: 420px;
+            margin: 48px auto;
+            padding: 28px 24px;
+            background: #fff;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+        }
+
+        .marca {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--primario);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .marca-icono {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--primario);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        #login h2, #registro h2 {
+            font-size: 20px;
+            margin-bottom: 18px;
+        }
+
+        /* ================= CAMPOS DE FORMULARIO ================= */
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gris);
+            margin-bottom: 4px;
+        }
+
+        input, select, textarea {
+            font: inherit;
+            font-size: 15px;
+            padding: 9px 11px;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--texto);
+            max-width: 100%;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primario);
+            box-shadow: 0 0 0 3px var(--primario-claro);
+        }
+
+        .campo { margin-bottom: 14px; }
+        .campo input, .campo select { width: 100%; }
+
+        /* ================= BOTONES (del tamaño de su texto) ================= */
+        button {
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: var(--primario);
+            color: #fff;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        button:hover  { background: var(--primario-osc); }
+
+        .btn-secundario { background: #fff; color: var(--primario); border-color: var(--borde); }
+        .btn-secundario:hover { background: var(--primario-claro); }
+
+        .btn-peligro { background: #fff; color: var(--rojo); border-color: #f2c4c4; }
+        .btn-peligro:hover { background: var(--rojo-claro); }
+
+        .btn-sm { padding: 5px 10px; font-size: 13px; }
+
+        .botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+
+        /* ================= CABECERA DE LA APP ================= */
+        .barra {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 20px;
+            background: var(--primario);
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+        }
+
+        .barra .marca { margin: 0; color: #fff; }
+        .barra .marca-icono { background: rgba(255, 255, 255, .18); }
+
+        .usuario {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .usuario .btn-barra {
+            background: rgba(255, 255, 255, .15);
+            border-color: rgba(255, 255, 255, .3);
+            color: #fff;
+        }
+        .usuario .btn-barra:hover { background: rgba(255, 255, 255, .28); }
+
+        /* ================= CONTENIDO ================= */
+        .contenido {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .saludo { margin: 4px 0 18px; font-size: 20px; }
+        .saludo span { color: var(--primario); }
+
+        /* Cada bloque es una tarjeta blanca */
+        .tarjeta {
+            background: #fff;
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            padding: 18px 20px;
+            margin-bottom: 18px;
+        }
+
+        .tarjeta-cabecera {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .tarjeta h3 {
+            font-size: 16px;
+            color: var(--primario-osc);
+        }
+
+        .subtexto { color: var(--gris); font-size: 13px; margin: 2px 0 0; }
+
+        /* Dos tarjetas lado a lado en pantallas grandes */
+        .columnas {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 18px;
+        }
+        .columnas .tarjeta { margin-bottom: 0; }
+        .columnas + * { margin-top: 18px; }
+
+        /* Filtros en rejilla */
+        .filtros {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .filtros select { width: 100%; }
+
+        #ministerio_estado {
+            margin: 10px 0 0;
+            font-size: 13px;
+            color: var(--gris);
+        }
+
+        /* ================= TABLAS ================= */
+        .tabla-scroll { width: 100%; overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            color: var(--gris);
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--borde);
+            vertical-align: middle;
+        }
+
+        tbody tr:hover { background: #fafcff; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        td button { margin: 2px 4px 2px 0; }
+
+        /* Ranking */
+        #tabla_ranking td:first-child { width: 48px; text-align: center; font-weight: 700; color: var(--gris); }
+        #tabla_ranking td:last-child, #tabla_ranking th:last-child { text-align: right; font-weight: 600; }
+
+        /* Etiquetas de estado de los recursos */
+        .estado {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .estado-0 { background: var(--verde-claro); color: var(--verde); }
+        .estado-1 { background: var(--rojo-claro);  color: var(--rojo); }
+        .estado-2 { background: var(--ambar-claro); color: var(--ambar); }
+
+        /* Colores de las reservas (antes eran fondos fuertes) */
+        tr.reserva-white td:first-child { border-left: 4px solid #cfd8e3; }
+        tr.reserva-green               { background: var(--verde-claro); }
+        tr.reserva-green td:first-child { border-left: 4px solid var(--verde); }
+        tr.reserva-blue                { background: var(--azul-claro); }
+        tr.reserva-blue td:first-child  { border-left: 4px solid #1565c0; }
+        tr.reserva-red                 { background: var(--rojo-claro); }
+        tr.reserva-red td:first-child   { border-left: 4px solid var(--rojo); }
+
+        .leyenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--gris); }
+        .leyenda span::before {
+            content: "";
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 3px;
+            margin-right: 5px;
+            vertical-align: -1px;
+        }
+        .ley-pendiente::before  { background: var(--verde); }
+        .ley-uso::before        { background: #1565c0; }
+        .ley-pasada::before     { background: var(--rojo); }
+        .ley-finalizada::before { background: #cfd8e3; }
+
+        /* Ficha del recurso: campos en rejilla */
+        .ficha {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px 16px;
+        }
+        .ficha .campo { margin-bottom: 0; }
+
+        .volver { margin-bottom: 14px; }
+
+        /* ================= MÓVIL (768px o menos) ================= */
+        @media (max-width: 768px) {
+
+            body { font-size: 14px; }
+
+            #login, #registro { margin: 20px 12px; padding: 22px 18px; }
+
+            .barra { padding: 10px 12px; }
+            .barra .marca span.texto-marca { display: none; }   /* solo el icono */
+            .usuario #nombre_gestor { display: none; }          /* el nombre ya sale en el saludo */
+
+            .contenido { padding: 12px; }
+            .saludo { font-size: 17px; margin-bottom: 12px; }
+
+            .tarjeta { padding: 14px; margin-bottom: 12px; }
+
+            .columnas { grid-template-columns: 1fr; gap: 12px; }
+            .columnas + * { margin-top: 12px; }
+
+            .filtros { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .ficha   { grid-template-columns: 1fr 1fr; }
+
+            th, td { padding: 8px 4px; }
+            th { font-size: 11px; letter-spacing: 0; }
+            table { font-size: 13px; }
+            td button { padding: 4px 7px; font-size: 12px; margin: 2px 0; display: block; }
+            .estado { font-size: 11px; padding: 2px 7px; white-space: normal; }
+
+            /* Columnas que se ocultan en el móvil para que todo quepa sin scroll lateral */
+            #tabla_recursos th:nth-child(2), #tabla_recursos td:nth-child(2),   /* Categoría  */
+            #tabla_recursos th:nth-child(4), #tabla_recursos td:nth-child(4),   /* Ubicación  */
+            #tabla_reservas th:nth-child(3), #tabla_reservas td:nth-child(3)    /* F. Petición */
+            { display: none; }
+        }
+
+        @media (max-width: 340px) {
+            .filtros, .ficha { grid-template-columns: 1fr; }
+        }
+    </style>
+
     <script src="rest.js"></script>
     <script src="main.js"></script>
 </head>
 
 <body>
-    <!-- LOGIN -->
+
+    <!-- ================= LOGIN ================= -->
     <div id="login">
-        <h2>ACCESO</h2>
-        Usuario: <input type="text" id="login_usuario"><br><br>
-        Contraseña: <input type="password" id="login_password"><br><br>
+        <div class="marca"><div class="marca-icono">✚</div> Gestión de Recursos Sanitarios</div>
+        <h2>Acceso de gestores</h2>
 
-        <button onclick="Entrar()">Entrar</button>
-        <button onclick="MostrarRegistro()">Registrarse</button>
+        <div class="campo">
+            <label for="login_usuario">Usuario</label>
+            <input type="text" id="login_usuario" autocomplete="username">
+        </div>
+        <div class="campo">
+            <label for="login_password">Contraseña</label>
+            <input type="password" id="login_password" autocomplete="current-password">
+        </div>
+
+        <div class="botones">
+            <button onclick="Entrar()">Entrar</button>
+            <button onclick="MostrarRegistro()" class="btn-secundario">Registrarse</button>
+        </div>
     </div>
 
-    <!-- REGISTRO DE GESTOR -->
+    <!-- ================= REGISTRO / EDICIÓN DE GESTOR ================= -->
     <div id="registro" style="display:none;">
-        <h2>DATOS GESTOR</h2>
+        <div class="marca"><div class="marca-icono">✚</div> Gestión de Recursos Sanitarios</div>
+        <h2>Datos del gestor</h2>
 
-        Nombre: <input type="text" id="reg_nombre"><br><br>
-        Apellidos: <input type="text" id="reg_apellidos"><br><br>
-        Login: <input type="text" id="reg_usuario"><br><br>
-        Contraseña: <input type="password" id="reg_password"><br><br>
+        <div class="campo">
+            <label for="reg_nombre">Nombre</label>
+            <input type="text" id="reg_nombre">
+        </div>
+        <div class="campo">
+            <label for="reg_apellidos">Apellidos</label>
+            <input type="text" id="reg_apellidos">
+        </div>
+        <div class="campo">
+            <label for="reg_usuario">Usuario</label>
+            <input type="text" id="reg_usuario">
+        </div>
+        <div class="campo">
+            <label for="reg_password">Contraseña</label>
+            <input type="password" id="reg_password">
+        </div>
 
-        <button onclick="Registrar()">Guardar</button>
-        <button onclick="VolverLogin()">Cancelar</button>
+        <!-- El primer botón tiene que ser "Guardar": EditarDatos() le cambia el texto a "Actualizar" -->
+        <div class="botones">
+            <button onclick="Registrar()">Guardar</button>
+            <button onclick="VolverLogin()" class="btn-secundario">Cancelar</button>
+        </div>
     </div>
 
-    <!-- VISTA PRINCIPAL -->
+    <!-- ================= VISTA PRINCIPAL ================= -->
     <div id="inicio" style="display:none;">
-        <h2>INICIO</h2>
 
-        Bienvenido <span id="nombre_gestor"></span> <!-- span es una etiqueta en línea: marca una parte pequeña del texto -->
+        <header class="barra">
+            <div class="marca"><div class="marca-icono">✚</div><span class="texto-marca">Gestión de Recursos Sanitarios</span></div>
+            <div class="usuario">
+                <span id="nombre_gestor"></span>
+                <button onclick="EditarDatos()" class="btn-sm btn-barra">Mis datos</button>
+                <button onclick="Salir()" class="btn-sm btn-barra">Salir</button>
+            </div>
+        </header>
 
-        <button onclick="EditarDatos()">Editar datos</button>
+        <main class="contenido">
 
-        <!-- P3 - PARTE 1: MINISTERIO DE SANIDAD (envío de reservas y ranking por área) -->
-        <h3>Ministerio de Sanidad</h3>
+            <h2 class="saludo">Panel del gestor</h2>
 
-        <button onclick="EnviarReservasMinisterio()">Enviar reservas al Ministerio</button>
-        <button onclick="cargarRanking()">Actualizar ranking</button>
-        <p id="ministerio_estado"></p>
+            <div class="columnas">
 
-        <table border="1" id="tabla_ranking">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Área médica</th>
-                    <th>Reservas totales</th>
-                </tr>
-            </thead>
-            <tbody id="ranking_cuerpo"></tbody>
-        </table>
-        <!-- FIN P3 -->
+                <!-- P3 - PARTE 1: MINISTERIO DE SANIDAD -->
+                <section class="tarjeta">
+                    <div class="tarjeta-cabecera">
+                        <div>
+                            <h3>Ranking del Ministerio de Sanidad</h3>
+                            <p class="subtexto">Volumen de reservas por área médica</p>
+                        </div>
+                        <div class="botones">
+                            <button onclick="EnviarReservasMinisterio()" class="btn-sm">Enviar reservas</button>
+                            <button onclick="cargarRanking()" class="btn-sm btn-secundario">Actualizar</button>
+                        </div>
+                    </div>
 
-        <!-- FILTROS DE BÚSQUEDA -->
-        <h3>Búsqueda de recursos</h3>
+                    <div class="tabla-scroll">
+                        <table id="tabla_ranking">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Área médica</th>
+                                    <th>Reservas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ranking_cuerpo"></tbody>
+                        </table>
+                    </div>
+                    <p id="ministerio_estado"></p>
+                </section>
 
-        Categoría:
-        <select id="f_categoria">
-            <option value="">Todas</option>
-            <option value="1">Termómetros</option>
-            <option value="2">Estetoscopios</option>
-            <option value="3">Sillas de ruedas</option>
-        </select>
-        <br><br>
+                <!-- ÁREA DE SALUD -->
+                <section class="tarjeta">
+                    <h3>Nueva área de salud</h3>
+                    <p class="subtexto">Registra un área asociada a tu gestión</p>
+                    <br>
+                    <div class="campo">
+                        <label for="codigo">Código postal</label>
+                        <input type="text" id="codigo">
+                    </div>
+                    <div class="campo">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre">
+                    </div>
+                    <button onclick="CrearArea()">Crear área</button>
+                </section>
 
-        Modelo:
-        <select id="f_modelo">
-            <option value="">Todos</option>
-            <option value="1">ThermoX</option>
-            <option value="2">ThermoPro</option>
-            <option value="3">EstetoPro</option>
-            <option value="4">EstetoPlus</option>
-            <option value="5">WheelBasic</option>
-        </select>
-        <br><br>
+            </div>
 
-        Ubicación:
-        <select id="f_ubicacion">
-            <option value="">Todos</option>
-            <option value="1">Almacén principal</option>
-            <option value="2">Laboratorio A</option>
-            <option value="3">Sala de Urgencias</option>
-            <option value="4">Quirófano 1</option>
-            <option value="5">Planta 2</option>
-        </select>
-        <br><br>
+            <!-- BÚSQUEDA DE RECURSOS -->
+            <section class="tarjeta">
+                <div class="tarjeta-cabecera">
+                    <div>
+                        <h3>Recursos del hospital</h3>
+                        <p class="subtexto">Filtra y gestiona el inventario de material</p>
+                    </div>
+                    <button onclick="MostrarAltaRecurso()" class="btn-sm">+ Añadir recurso</button>
+                </div>
 
-        Estado:
-        <select id="f_estado">
-            <option value="">Todos</option>
-            <option value="0">Operativo</option>
-            <option value="1">De baja/Defectuoso</option>
-            <option value="2">En mantenimiento</option>
-        </select>
-        <br><br>
+                <div class="filtros">
+                    <div>
+                        <label for="f_categoria">Categoría</label>
+                        <select id="f_categoria">
+                            <option value="">Todas</option>
+                            <option value="1">Termómetros</option>
+                            <option value="2">Estetoscopios</option>
+                            <option value="3">Sillas de ruedas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="f_modelo">Modelo</label>
+                        <select id="f_modelo">
+                            <option value="">Todos</option>
+                            <option value="1">ThermoX</option>
+                            <option value="2">ThermoPro</option>
+                            <option value="3">EstetoPro</option>
+                            <option value="4">EstetoPlus</option>
+                            <option value="5">WheelBasic</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="f_ubicacion">Ubicación</label>
+                        <select id="f_ubicacion">
+                            <option value="">Todas</option>
+                            <option value="1">Almacén principal</option>
+                            <option value="2">Laboratorio A</option>
+                            <option value="3">Sala de Urgencias</option>
+                            <option value="4">Quirófano 1</option>
+                            <option value="5">Planta 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="f_estado">Estado</label>
+                        <select id="f_estado">
+                            <option value="">Todos</option>
+                            <option value="0">Operativo</option>
+                            <option value="1">De baja/Defectuoso</option>
+                            <option value="2">En mantenimiento</option>
+                        </select>
+                    </div>
+                </div>
 
-        <button onclick="BuscarRecursos()">Buscar</button><br><br>
+                <button onclick="BuscarRecursos()">Buscar</button>
 
-        <h3>Área</h3>
+                <div class="tabla-scroll">
+                    <table id="tabla_recursos" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>N. Serie</th>
+                                <th>Categoría</th>
+                                <th>Modelo</th>
+                                <th>Ubicación</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista_recursos"></tbody>
+                    </table>
+                </div>
+            </section>
 
-        Código postal:
-        <input type="text" id="codigo"><br><br>
-
-        Nombre:
-        <input type="text" id="nombre"><br><br>
-
-        <button onclick="CrearArea()">Crear Area</button><br><br>
-
-        <!-- TABLA DE RESULTADOS -->
-        <table border="1" id="tabla_recursos" style="display:none;">
-            <thead>
-                <tr>
-                    <th>N. Serie</th>
-                    <th>Categoría</th>
-                    <th>Modelo</th>
-                    <th>Ubicación</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="lista_recursos"></tbody>
-        </table><br>
-
-        <button onclick="MostrarAltaRecurso()">Añadir Recurso</button>
-        <button onclick="Salir()">Salir</button>
+        </main>
     </div>
 
-    <!-- Lo que se ve al darle Añadir un recurso o Ficha -->
+    <!-- ================= FICHA DEL RECURSO (alta o edición) ================= -->
     <div id="alta_recurso" style="display:none;">
 
-        <h3>Datos Recurso</h3>
+        <header class="barra">
+            <div class="marca"><div class="marca-icono">✚</div><span class="texto-marca">Gestión de Recursos Sanitarios</span></div>
+        </header>
 
-        Categoría:
-        <select id="nueva_categoria">
-            <option value="">Todas</option>
-            <option value="1">Termómetros</option>
-            <option value="2">Estetoscopios</option>
-            <option value="3">Sillas de ruedas</option>
-        </select><br><br>
+        <main class="contenido">
 
-        Modelo:
-        <select id="nuevo_modelo">
-            <option value="1">ThermoX</option>
-            <option value="2">ThermoPro</option>
-            <option value="3">EstetoPro</option>
-            <option value="4">EstetoPlus</option>
-            <option value="5">WheelBasic</option>
-        </select><br><br>
+            <button onclick="CancelarAlta()" class="btn-secundario btn-sm volver">← Volver al listado</button>
 
-        Número de serie:
-        <input type="text" id="nuevo_numero"><br><br>
+            <section class="tarjeta">
+                <div class="tarjeta-cabecera">
+                    <h3>Datos del recurso</h3>
+                    <button onclick="GuardarRecurso()">Guardar</button>
+                </div>
 
-        Ubicación:
-        <select id="nuevo_ubicacion">
-            <option value="1">Almacén principal</option>
-            <option value="2">Laboratorio A</option>
-            <option value="3">Sala de Urgencias</option>
-            <option value="4">Quirófano 1</option>
-            <option value="5">Planta 2</option>
-        </select><br><br>
+                <div class="ficha">
+                    <div class="campo">
+                        <label for="nueva_categoria">Categoría</label>
+                        <select id="nueva_categoria">
+                            <option value="">Todas</option>
+                            <option value="1">Termómetros</option>
+                            <option value="2">Estetoscopios</option>
+                            <option value="3">Sillas de ruedas</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="nuevo_modelo">Modelo</label>
+                        <select id="nuevo_modelo">
+                            <option value="1">ThermoX</option>
+                            <option value="2">ThermoPro</option>
+                            <option value="3">EstetoPro</option>
+                            <option value="4">EstetoPlus</option>
+                            <option value="5">WheelBasic</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="nuevo_numero">Número de serie</label>
+                        <input type="text" id="nuevo_numero">
+                    </div>
+                    <div class="campo">
+                        <label for="nuevo_ubicacion">Ubicación</label>
+                        <select id="nuevo_ubicacion">
+                            <option value="1">Almacén principal</option>
+                            <option value="2">Laboratorio A</option>
+                            <option value="3">Sala de Urgencias</option>
+                            <option value="4">Quirófano 1</option>
+                            <option value="5">Planta 2</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label for="nuevo_estado">Estado</label>
+                        <select id="nuevo_estado">
+                            <option value="0">Operativo</option>
+                            <option value="1">De baja / defectuoso</option>
+                            <option value="2">En mantenimiento</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
 
-        Estado:
-        <select id="nuevo_estado">
-            <option value="0">Operativo</option>
-            <option value="1">De baja / defectuoso</option>
-            <option value="2">En mantenimiento</option>
-        </select><br><br>
+            <section class="tarjeta">
+                <div class="tarjeta-cabecera">
+                    <h3>Reservas</h3>
+                    <div class="leyenda">
+                        <span class="ley-pendiente">Pendiente</span>
+                        <span class="ley-uso">En uso</span>
+                        <span class="ley-pasada">Tiempo superado</span>
+                        <span class="ley-finalizada">Finalizada</span>
+                    </div>
+                </div>
+                <div class="tabla-scroll">
+                    <table id="tabla_reservas" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Sanitario</th>
+                                <th>Horas</th>
+                                <th>Petición</th>
+                                <th>Inicio</th>
+                                <th>Fin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista_reservas"></tbody>
+                    </table>
+                </div>
+            </section>
 
-        <button onclick="GuardarRecurso()">Guardar</button>
+            <section class="tarjeta">
+                <h3>Reseñas</h3>
+                <br>
+                <div class="tabla-scroll">
+                    <table id="tabla_resenyas" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Sanitario</th>
+                                <th>Valor</th>
+                                <th>Comentario</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista_resenyas"></tbody>
+                    </table>
+                </div>
+            </section>
 
-        <hr>
-
-        <h3>Reservas</h3>
-        <table border="1" id="tabla_reservas" style="display:none;">
-            <thead>
-                <tr>
-                    <th>Sanitario</th>
-                    <th>Horas estimadas</th>
-                    <th>F. Petición</th>
-                    <th>F. Inicio</th>
-                    <th>F. Fin</th>
-                </tr>
-            </thead>
-            <tbody id="lista_reservas"></tbody>
-        </table>
-
-        <h3>Reseñas</h3>
-        <table border="1" id="tabla_resenyas" style="display:none;">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Sanitario</th>
-                    <th>Valoración</th>
-                    <th>Comentario</th>
-                </tr>
-            </thead>
-            <tbody id="lista_resenyas"></tbody>
-        </table>
-
-        <br><br>
-        <button onclick="CancelarAlta()">Volver al listado</button>
-
+        </main>
     </div>
 
 </body>
