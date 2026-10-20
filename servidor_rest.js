@@ -344,40 +344,5 @@ app.get("/api/recursos/:id/resenyas", function(req, res){
     });
 });
 
-/* PRÁCTICA 3 - PARTE 1: TODAS LAS RESERVAS con el formato del Ministerio */
-app.get("/api/reservas", function(req, res){
-
-    var sql = `SELECT s.nombre, s.apellidos,
-                      c.nombre AS categoria,
-                      r.horas_estimadas,
-                      TO_CHAR(r.fecha_peticion, 'YYYY-MM-DD HH24:MI:SS') AS fec_pet,
-                      TO_CHAR(r.fecha_inicio,   'YYYY-MM-DD HH24:MI:SS') AS fec_ini,
-                      TO_CHAR(r.fecha_fin,      'YYYY-MM-DD HH24:MI:SS') AS fecha_fin
-               FROM reservas r
-               JOIN sanitarios s ON r.sanitario = s.id
-               JOIN recursos re  ON r.recurso = re.id
-               JOIN modelos m    ON re.modelo = m.id
-               JOIN categorias c ON m.categoria = c.id
-               ORDER BY r.fecha_peticion`;
-
-    conexion.query(sql, function(err, resultado){
-        if(err) return errorBD(res, err);
-        res.status(200).json(resultado.rows);
-    });
-});
-
-/* EJERCICIO 2 (examen práctica 1) */
-app.post("/api/area_salud", function(req, res){
-    var sql = "INSERT INTO areas (codigo, nombre, gestor) VALUES ($1, $2, $3)";
-    conexion.query(sql, [req.body.codigo, req.body.nombre, req.body.gestor], function(err){
-        if(err) return errorBD(res, err);
-        res.status(201).json({
-            codigo: req.body.codigo,
-            nombre: req.body.nombre,
-            gestor: req.body.gestor
-        });
-    });
-});
-
 
 module.exports = app;

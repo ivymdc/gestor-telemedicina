@@ -213,6 +213,8 @@ function MostrarRecursos() {
     var tbody = document.getElementById("lista_recursos");
     tbody.innerHTML = "";
 
+    var nombresEstado = ["Operativo", "De baja/Defectuoso", "En mantenimiento"];
+
     recursos.forEach(function(r){
         var fila = document.createElement("tr");
 
@@ -221,14 +223,10 @@ function MostrarRecursos() {
             <td>${r.modelo.categoria.nombre}</td>
             <td>${r.modelo.nombre}</td>
             <td>${r.ubicacion}</td>
-            <td>${
-                r.estado === 0 ? "Operativo" :
-                r.estado === 1 ? "De baja/Defectuoso" :
-                r.estado === 2 ? "En mantenimiento" : "Desconocido"
-            }</td>
+            <td><span class="estado estado-${r.estado}">${nombresEstado[r.estado] || "Desconocido"}</span></td>
             <td>
-                <button onclick="AbrirFicha(${r.id})">Ficha</button>
-                <button onclick="BorrarRecurso(${r.id})">Borrar</button>
+                <button class="btn-sm btn-secundario" onclick="AbrirFicha(${r.id})">Ficha</button>
+                <button class="btn-sm btn-peligro" onclick="BorrarRecurso(${r.id})">Borrar</button>
             </td>
         `;
 
@@ -362,7 +360,7 @@ function CargarReservas(id){
 
             response.forEach(function(r){
                 var fila = document.createElement("tr");
-                fila.style.backgroundColor = r.color;
+                fila.className = "reserva-" + r.color;   // colores suaves definidos en el CSS
 
                 fila.innerHTML = `
                     <td>${r.sanitario}</td>
@@ -417,7 +415,7 @@ function CargarResenyas(id){
    Enviar nuestras reservas y mostrar el ranking de reservas por área
    ===================================================================== */
 
-var URL_MINISTERIO = "https://undefined.ua.es/telemedicina/api/datos";  // ← cambiar por la URL real
+var URL_MINISTERIO = "https://undefined.ua.es/telemedicina/api/datos";  // servicio del Ministerio
 var MI_ID_AREA = 2;                                                     // Anestesiología
 
 // Códigos de área del enunciado
@@ -442,54 +440,114 @@ function mensajeMinisterio(texto) {
 }
 
 
-/* ---------- (a) ENVIAR NUESTRAS RESERVAS AL MINISTERIO ---------- */
+// Convierte una fecha de la base de datos a "YYYY-MM-DD HH:MM:SS" (o null si no hay)
+function formatearFecha(f) {
+    if (!f) return null;
+    var d = new Date(f);
+    function dos(n) { return String(n).padStart(2, "0"); }
+    return d.getFullYear() + "-" + dos(d.getMonth() + 1) + "-" + dos(d.getDate()) + " " +
+           dos(d.getHours()) + ":" + dos(d.getMinutes()) + ":" + dos(d.getSeconds());
+}
+
+// El GET de reservas devuelve el sanitario junto ("Carlos Pérez"):
+// lo que va antes del primer espacio es el nombre y el resto los apellidos
+function separarNombre(texto) {
+    var s = (texto || "").trim();
+    var espacio = s.indexOf(" ");
+    if (espacio === -1) return { nombre: s, apellidos: "" };
+    return { nombre: s.substring(0, espacio), apellidos: s.substring(espacio + 1) };
+}
+
+/* ---------- (a) ENVIAR NUESTRAS RESERVAS AL MINISTERIO ----------
+   Solo se usan los GET que ya existían (sin servicios ni consultas nuevas):
+     1. GET /api/recursos               → todos los recursos, con su categoría
+     2. GET /api/recursos/:id/reservas  → las reservas de cada recurso
+   Se juntan todas en un array y se hace UN SOLO POST al Ministerio. */
 function EnviarReservasMinisterio() {
     mensajeMinisterio("Obteniendo las reservas...");
 
-    // 1. Pedir todas las reservas a NUESTRO servidor (con token)
-    rest.get(conToken("/api/reservas"), function(status, reservas){
-        if (sesionCaducada(status, reservas)) return;
+    // 1. Todos los recursos
+    rest.get(conToken("/api/recursos"), function(status, lista){
+        if (sesionCaducada(status, lista)) return;
 
         if (status !== 200) {
-            mensajeMinisterio("No se pudieron obtener las reservas");
+            mensajeMinisterio("No se pudieron obtener los recursos");
+            return;
+        }
+        if (lista.length === 0) {
+            enviarAlMinisterio([]);
             return;
         }
 
-        // 2. Darles el formato exacto que pide el Ministerio
-        var datos = reservas.map(function(r){
-            return {
-                "nombre": r.nombre,
-                "apellidos": r.apellidos,
-                "categoría": r.categoria,
-                "horas_estimadas": r.horas_estimadas,
-                "fec_pet": r.fec_pet,
-                "fec_ini": r.fec_ini,
-                "fecha_fin": r.fecha_fin
-            };
+        var datos = [];        // aquí se van juntando todas las reservas
+        var respuestas = 0;    // cuántos recursos han respondido ya
+        var hayError = false;
+        var cortado = false;   // para avisar de la sesión caducada una sola vez
+
+        // 2. Las reservas de cada recurso (las peticiones responden en cualquier orden)
+        lista.forEach(function(recurso){
+            rest.get(conToken("/api/recursos/" + recurso.id + "/reservas"), function(s, reservas){
+
+                if (s === 401) {
+                    if (!cortado) { cortado = true; sesionCaducada(s, reservas); }
+                    return;
+                }
+
+                respuestas++;
+
+                if (s === 200) {
+                    reservas.forEach(function(r){
+                        var persona = separarNombre(r.sanitario);
+                        datos.push({
+                            "nombre": persona.nombre,
+                            "apellidos": persona.apellidos,
+                            "categoría": recurso.modelo.categoria.nombre,   // la categoría sale del recurso
+                            "horas_estimadas": r.horas_estimadas,
+                            "fec_pet": formatearFecha(r.fecha_peticion),
+                            "fec_ini": formatearFecha(r.fecha_inicio),
+                            "fecha_fin": formatearFecha(r.fecha_fin)
+                        });
+                    });
+                } else {
+                    hayError = true;
+                }
+
+                // 3. Cuando han respondido TODOS los recursos, un solo POST
+                if (respuestas === lista.length) {
+                    if (hayError) {
+                        mensajeMinisterio("No se pudieron obtener todas las reservas. No se ha enviado nada.");
+                        return;
+                    }
+                    enviarAlMinisterio(datos);
+                }
+            });
         });
+    });
+}
 
-        var envio = {
-            "id_area": MI_ID_AREA,
-            "fecha": fechaHoy(),
-            "datos": datos
-        };
+// Hace el ÚNICO POST al Ministerio con todas las reservas
+// (servidor EXTERNO: no lleva nuestro token)
+function enviarAlMinisterio(datos) {
+    var envio = {
+        "id_area": MI_ID_AREA,
+        "fecha": fechaHoy(),
+        "datos": datos
+    };
 
-        mensajeMinisterio("Enviando " + datos.length + " reservas...");
+    mensajeMinisterio("Enviando " + datos.length + " reservas...");
 
-        // 3. Enviarlas al Ministerio (servidor EXTERNO: sin nuestro token)
-        fetch(URL_MINISTERIO, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(envio)
-        })
-        .then(function(respuesta){
-            if (!respuesta.ok) throw new Error("El Ministerio respondió " + respuesta.status);
-            mensajeMinisterio("Reservas enviadas correctamente al Ministerio (" + datos.length + ").");
-            cargarRanking();
-        })
-        .catch(function(error){
-            mensajeMinisterio("Error al enviar: " + error.message);
-        });
+    fetch(URL_MINISTERIO, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(envio)
+    })
+    .then(function(respuesta){
+        if (!respuesta.ok) throw new Error("El Ministerio respondió " + respuesta.status);
+        mensajeMinisterio("Reservas enviadas correctamente al Ministerio (" + datos.length + ").");
+        cargarRanking();
+    })
+    .catch(function(error){
+        mensajeMinisterio("Error al enviar: " + error.message);
     });
 }
 
