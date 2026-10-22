@@ -658,6 +658,15 @@ function esTextoNoVacio(x) {
     return typeof x === "string" && x.trim() !== "";
 }
 
+// ¿Es un texto válido para un NOMBRE, APELLIDO o CATEGORÍA?
+// Tiene que ser texto no vacío y contener al menos UNA LETRA.
+//   "Carlos", "Pérez García", "Sillas de ruedas" → bien
+//   "3", "  12 ", "-", "...", 3 (número)         → mal
+// (\p{L} = cualquier letra, también con tilde o ñ; la "u" del final lo activa)
+function esTextoConLetras(x) {
+    return esTextoNoVacio(x) && /\p{L}/u.test(x);
+}
+
 // ¿Está vacía una fecha OPCIONAL? (fec_ini y fecha_fin pueden venir vacías)
 function esFechaVacia(x) {
     return x === null || x === undefined || x === "";
@@ -696,14 +705,17 @@ function motivoReservaInvalida(d) {
     // Tiene que ser un objeto { ... } (no null, ni un número, ni un array)
     if (d === null || typeof d !== "object" || Array.isArray(d)) return "no es un objeto";
 
-    // Nombre y apellidos: texto con algo escrito
+    // Nombre y apellidos: texto con algo escrito y con letras (un "3" no es un nombre)
     if (!esTextoNoVacio(d.nombre)) return "falta el nombre";
+    if (!esTextoConLetras(d.nombre)) return "el nombre no tiene letras";
     if (!esTextoNoVacio(d.apellidos)) return "faltan los apellidos";
+    if (!esTextoConLetras(d.apellidos)) return "los apellidos no tienen letras";
 
     // Categoría: el enunciado dice "categoría" (con tilde), pero muchos grupos
     // la envían sin tilde ("categoria"). Aceptamos las dos formas.
     var categoria = d["categoría"] !== undefined ? d["categoría"] : d.categoria;
     if (!esTextoNoVacio(categoria)) return "falta la categoría";
+    if (!esTextoConLetras(categoria)) return "la categoría no tiene letras";
 
     // Horas estimadas: tiene que ser un número (o un texto con un número) MAYOR que 0.
     //   2, "4", 1.5 → bien   |   null, "", "abc", 0, -3, "Infinity" → mal
@@ -757,6 +769,11 @@ function motivoEnvioInvalido(e) {
     if (typeof a !== "number" && !(typeof a === "string" && /^\s*\d+\s*$/.test(a))) return "id_area no es un número";
     var area = Number(a);
     if (!Number.isInteger(area) || AREAS[area] === undefined) return "id_area fuera de 1-18";
+
+    // "fecha" del envío: tiene que ser una fecha real y no estar en el futuro
+    var fechaEnvio = leerFecha(e.fecha);
+    if (fechaEnvio === null) return "fecha del envío incorrecta o vacía";
+    if (fechaEnvio.getTime() > Date.now() + UN_DIA) return "fecha del envío en el futuro";
 
     // "datos" tiene que ser un array de reservas
     if (!Array.isArray(e.datos)) return "datos no es un array";
