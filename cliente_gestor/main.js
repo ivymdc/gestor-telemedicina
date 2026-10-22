@@ -994,7 +994,7 @@ function PorcentajeReservasFinalizadas() {
             var porcentaje = 0;
 
             if(totalTodos > 0){
-                porcentaje = (totalFinalizadas / totalTodos) * 100;
+                porcentaje = (totalFinalizados / totalTodos) * 100;
             }
             var mensaje = "De las reservas de ese área, el " + porcentaje.toFixed(2) + " están finalizadas"
     
