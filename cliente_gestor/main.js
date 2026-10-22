@@ -972,28 +972,80 @@ function PorcentajeReservasFinalizadas() {
    
             var envios = Array.isArray(contenido) ? contenido : Object.values(contenido || {});
             var totalFinalizados = 0;
-            var porcentaje=0; 
-            var suma=0; 
+            var totalTodos=0; 
 
             envios.forEach(function(envio){
                 if (!esEnvioValido(envio)) return;                  
                 if (Number(envio.id_area) !== MI_ID_AREA) return;   
      
-                suma++;
            
                 envio.datos.forEach(function(d){
-                    if (!esReservaValida(d)) return;              
-                    if (esFechaVacia(d.fecha_fin)) return;           
-                    totalFinalizados++;                                       
+
+                    if (esReservaValida(d)){
+                        totalTodos++;
+                        if (!esFechaVacia(d.fecha_fin)){
+                            totalFinalizados++;             
+                        } 
+                    }                  
+                                              
                 });
             });
 
-            porcentaje = (totalFinalizados/suma)*100
+            var porcentaje = 0;
 
-            alert("De las reservas de ese área, el "+porcentaje+ "están finalizadas");
-        })
-        .catch(function(error){
-            alert("Error al consultar el Ministerio: " + error.message);
-        });
+            if(totalTodos > 0){
+                porcentaje = (totalFinalizadas / totalTodos) * 100;
+            }
+            var mensaje = "De las reservas de ese área, el " + porcentaje.toFixed(2) + " están finalizadas"
+    
+            alert(mensaje);
+            mensajeMinisterio(mensaje);
+        }); 
+    
 }
 
+/*
+function PorcentajeFinalizadas(){
+    var idArea = 1;
+    fetch(URL_MINISTERIO)
+    .then(function(respuesta){
+        return respuesta.json();
+    })
+    .then(function(envios){
+
+        var total = 0;
+        var finalizadas = 0;
+        envios.forEach(function(envio){
+
+            if(!esEnvioValido(envio)) return;
+
+            if(Number(envio.id_area) !== idArea) return;
+
+            envio.datos.forEach(function(reserva){
+
+                if(esReservaValida(reserva)){
+
+                    total++;
+                    if(!esFechaVacia(reserva.fecha_fin)){
+                        finalizadas++;
+                    }
+
+                }
+            });
+
+        });
+
+        var porcentaje = 0;
+
+        if(total > 0){
+            porcentaje = (finalizadas / total) * 100;
+        }
+        var mensaje = "De las reservas de ese área, el " + porcentaje.toFixed(2) + " están finalizadas"
+           
+        alert(mensaje);
+        mensajeMinisterio(mensaje);
+
+    });
+
+}
+*/
