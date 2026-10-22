@@ -500,6 +500,9 @@
 
                 <button onclick="BuscarRecursos()">Buscar</button>
 
+                <input type="number" id="area_consulta" placeholder="id_area (1-18)" min="1" max="18">
+                <button onclick="ContarArea()">Contar Reservas Área</button>
+
                 <div class="tabla-scroll">
                     <table id="tabla_recursos" style="display:none;">
                         <thead>
@@ -515,6 +518,7 @@
                         <tbody id="lista_recursos"></tbody>
                     </table>
                 </div>
+
             </section>
 
         </main>

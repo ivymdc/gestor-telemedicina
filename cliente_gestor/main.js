@@ -764,7 +764,7 @@ function motivoEnvioInvalido(e) {
     if (e === null || typeof e !== "object" || Array.isArray(e)) return "no es un objeto";
 
     // id_area: número entero (o texto con solo dígitos) entre 1 y 18.
-    // Ojo: Number(true) = 1 y Number([2]) = 2, por eso comprobamos antes el TIPO.
+    // Number(true) = 1 y Number([2]) = 2, por eso comprobamos antes el TIPO.
     var a = e.id_area;
     if (typeof a !== "number" && !(typeof a === "string" && /^\s*\d+\s*$/.test(a))) return "id_area no es un número";
     var area = Number(a);
@@ -921,4 +921,39 @@ function pintarRanking(ranking) {
     });
 
     document.getElementById("ranking_cuerpo").innerHTML = html;
+}
+
+
+function ContarArea() {
+
+    var texto = document.getElementById("area_consulta").value.trim();
+    var area = Number(texto);
+
+    if (texto === "" || !Number.isInteger(area) || AREAS[area] === undefined) {
+        alert("Escribe un id_area válido (del 1 al 18)");
+        return;
+    }
+
+    fetch(URL_MINISTERIO)
+        .then(function(respuesta){
+            if (!respuesta.ok) throw new Error("El Ministerio respondió " + respuesta.status);
+            return respuesta.json();
+        })
+        .then(function(contenido){
+       
+            var envios = Array.isArray(contenido) ? contenido : Object.values(contenido || {});
+
+            var total = 0;
+            envios.forEach(function(envio){
+                if (!esEnvioValido(envio)) return;              
+                if (Number(envio.id_area) !== area) return;     
+                total++;                                        
+            });
+
+         
+            alert("Existen " + total + " subidas de " + AREAS[area]);
+        })
+        .catch(function(error){
+            alert("Error al consultar el Ministerio: " + error.message);
+        });
 }
