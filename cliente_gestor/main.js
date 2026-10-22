@@ -957,3 +957,43 @@ function ContarArea() {
             alert("Error al consultar el Ministerio: " + error.message);
         });
 }
+
+
+var MI_ID_AREA=1; 
+
+function PorcentajeReservasFinalizadas() {
+
+     fetch(URL_MINISTERIO)
+        .then(function(respuesta){
+            if (!respuesta.ok) throw new Error("El Ministerio respondió " + respuesta.status);
+            return respuesta.json();
+        })
+        .then(function(contenido){
+   
+            var envios = Array.isArray(contenido) ? contenido : Object.values(contenido || {});
+            var totalFinalizados = 0;
+            var porcentaje=0; 
+            var suma=0; 
+
+            envios.forEach(function(envio){
+                if (!esEnvioValido(envio)) return;                  
+                if (Number(envio.id_area) !== MI_ID_AREA) return;   
+     
+                suma++;
+           
+                envio.datos.forEach(function(d){
+                    if (!esReservaValida(d)) return;              
+                    if (esFechaVacia(d.fecha_fin)) return;           
+                    totalFinalizados++;                                       
+                });
+            });
+
+            porcentaje = (totalFinalizados/suma)*100
+
+            alert("De las reservas de ese área, el "+porcentaje+ "están finalizadas");
+        })
+        .catch(function(error){
+            alert("Error al consultar el Ministerio: " + error.message);
+        });
+}
+
