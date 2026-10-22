@@ -505,12 +505,6 @@ function separarNombre(texto) {
      2. GET /api/recursos/:id/reservas  → las reservas de cada recurso
    Se juntan todas las reservas en un array y se hace UN SOLO POST.
 
-   ¿Por qué un contador ("respuestas")?
-   Las peticiones del paso 2 son ASÍNCRONAS: se lanzan todas a la vez y
-   responden en cualquier orden. No podemos hacer el POST justo después del
-   forEach porque en ese momento aún no ha llegado ninguna respuesta.
-   Por eso contamos las respuestas y, cuando han llegado TODAS
-   (respuestas === lista.length), entonces hacemos el único POST.
    ===================================================================== */
 function EnviarReservasMinisterio() {
     mensajeMinisterio("Obteniendo las reservas...");
@@ -550,9 +544,7 @@ function EnviarReservasMinisterio() {
                 if (s === 200 && Array.isArray(reservas)) {
                     // Transformamos cada reserva de NUESTRO formato al del MINISTERIO
                     reservas.forEach(function(r){
-                        // >>> AQUÍ es donde se FILTRA si en el examen piden enviar solo algunas
-                        //     reservas, p. ej. las de un sanitario:
-                        //     if (r.sanitario !== "Carlos Pérez") return;
+                        
                         var persona = separarNombre(r.sanitario);
                         datos.push({
                             "nombre": persona.nombre,
@@ -645,12 +637,7 @@ function enviarAlMinisterio(datos, noEnviadas) {
    ---------------------------------------------------------------------
    El GET del Ministerio trae datos de TODOS los grupos y puede haber de todo:
    campos vacíos, fechas mal escritas, áreas que no existen, envíos repetidos...
-   NO nos fiamos: cada envío y cada reserva se comprueba antes de contarla.
 
-   Las funciones "motivo..." devuelven:
-       null              → el dato es CORRECTO
-       "texto del fallo" → el dato es INCORRECTO, y el texto dice POR QUÉ
-   (así en la consola se ve el motivo de cada descarte)
    ===================================================================== */
 
 // ¿Es un texto con algo escrito? ("" o "   " o un número → false)
@@ -857,9 +844,6 @@ function cargarRanking() {
                         return;                     // reserva incorrecta → no se cuenta
                     }
 
-                    // >>> AQUÍ se FILTRA si en el examen piden contar solo algunas reservas
-                    //     (de un sanitario, de una categoría, de unas fechas...):
-                    //     if (d.nombre !== "Carlos") return;
 
                     var clave = claveReserva(area, d);
                     if (vistas[clave]) {            // ya contada → no se suma otra vez
