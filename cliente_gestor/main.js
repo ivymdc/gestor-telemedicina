@@ -951,7 +951,7 @@ function ContarArea() {
             });
 
          
-            alert("Existen " + total + " subidas de " + AREAS[area]);
+            alert("Existen " + total + " reservas del área de " + AREAS[area]);
         })
         .catch(function(error){
             alert("Error al consultar el Ministerio: " + error.message);
