@@ -959,9 +959,9 @@ function ContarArea() {
 }
 
 
-var MI_ID_AREA=1; 
-
 function PorcentajeReservasFinalizadas() {
+
+    var MI_ID_AREA=1; 
 
      fetch(URL_MINISTERIO)
         .then(function(respuesta){
@@ -977,7 +977,6 @@ function PorcentajeReservasFinalizadas() {
             envios.forEach(function(envio){
                 if (!esEnvioValido(envio)) return;                  
                 if (Number(envio.id_area) !== MI_ID_AREA) return;   
-     
            
                 envio.datos.forEach(function(d){
 
